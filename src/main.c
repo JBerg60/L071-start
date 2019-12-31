@@ -8,7 +8,7 @@
 #include "system_stm32l0xx.h"
 
 #define EEMEM __attribute__((section(".eeprom")))
-EEMEM const uint8_t eepromArray[4095];
+EEMEM uint8_t eepromArray[4095];
 
 // delay loop for the default 2.1 MHz CPU clock with optimizer enabled
 void delay(uint32_t msec)

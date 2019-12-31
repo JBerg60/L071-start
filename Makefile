@@ -16,7 +16,7 @@ COMDIR = common
 CPU = cortex-m0plus
 
 # Sources
-SRC = $(wildcard $(SRCDIR)/*.c) $(wildcard $(COMDIR)/src/*.c)
+SRC = $(wildcard $(SRCDIR)/*.c) $(wildcard $(COMDIR)/src/*.c) $(wildcard $(SRCDIR)/*.cpp) $(wildcard $(COMDIR)/src/*.cpp)
 ASM = $(wildcard $(SRCDIR)/*.s) $(wildcard $(COMDIR)/src/*.s)
 
 #defines
@@ -35,7 +35,7 @@ CCOMMONFLAGS = -Wall -Os -g -fno-common -mthumb -mcpu=$(CPU) --specs=nosys.specs
 CDEPFLAGS += -MMD -MP -MF $(@:%.o=%.d)
 
 # C Flags
-GCFLAGS  = -std=c11  -Wa,-ahlms=$(addprefix $(OBJDIR)/,$(notdir $(<:.c=.lst)))
+GCFLAGS  = -std=c++14 -Wa,-ahlms=$(addprefix $(OBJDIR)/,$(notdir $(<:.c=.lst)))
 GCFLAGS += $(CCOMMONFLAGS) $(INCLUDE) $(DEFINE) $(CDEPFLAGS)
 LDFLAGS += -T$(LSCRIPT) -mthumb -mcpu=$(CPU) --specs=nosys.specs --specs=nano.specs -Wl,-Map,$(BINDIR)/$(PROJECT).map -Wl,--gc-sections
 ASFLAGS += -mcpu=$(CPU)
@@ -63,7 +63,7 @@ all:: $(BINDIR)/$(PROJECT).bin $(BINDIR)/$(PROJECT).hex
 Build: $(BINDIR)/$(PROJECT).bin
 
 macros:
-	$(CC) $(GCFLAGS) -dM -E - < /dev/null
+	$(CP) $(GCFLAGS) -dM -E - < /dev/null
 
 cleanBuild: clean
 
@@ -84,13 +84,13 @@ $(BINDIR)/$(PROJECT).bin: $(BINDIR)/$(PROJECT).elf
 
 $(BINDIR)/$(PROJECT).elf: $(OBJ) $(LSCRIPT)
 	@mkdir -p $(dir $@)
-	$(CC) $(OBJ) $(LDFLAGS) -o $(BINDIR)/$(PROJECT).elf
+	$(CP) $(OBJ) $(LDFLAGS) -o $(BINDIR)/$(PROJECT).elf
 	$(OBJDUMP) -D $(BINDIR)/$(PROJECT).elf > $(BINDIR)/$(PROJECT).lst
 	$(SIZE) $(BINDIR)/$(PROJECT).elf
 
 $(OBJDIR)/%.o: $(SRCDIR)/%.c
 	@mkdir -p $(dir $@)
-	$(CC) $(GCFLAGS) -c $< -o $@
+	$(CP) $(GCFLAGS) -c $< -o $@
 	@echo -e ""
 
 $(OBJDIR)/%.o: $(SRCDIR)/%.s
@@ -100,7 +100,7 @@ $(OBJDIR)/%.o: $(SRCDIR)/%.s
 
 $(OBJDIR)/%.o: $(COMDIR)/src/%.c
 	@mkdir -p $(dir $@)
-	$(CC) $(GCFLAGS) -c $< -o $@
+	$(CP) $(GCFLAGS) -c $< -o $@
 
 $(OBJDIR)/%.o: $(COMDIR)/src/%.s
 	@mkdir -p $(dir $@)
