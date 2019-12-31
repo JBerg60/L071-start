@@ -16,7 +16,8 @@ COMDIR = common
 CPU = cortex-m0plus
 
 # Sources
-SRC = $(wildcard $(SRCDIR)/*.c) $(wildcard $(COMDIR)/src/*.c) $(wildcard $(SRCDIR)/*.cpp) $(wildcard $(COMDIR)/src/*.cpp)
+SRC = $(wildcard $(SRCDIR)/*.c) $(wildcard $(COMDIR)/src/*.c) 
+CPPSRC = $(wildcard $(SRCDIR)/*.cpp) $(wildcard $(COMDIR)/src/*.cpp)
 ASM = $(wildcard $(SRCDIR)/*.s) $(wildcard $(COMDIR)/src/*.s)
 
 #defines
@@ -53,9 +54,9 @@ OBJDUMP = arm-none-eabi-objdump
 RM = rm -rf
 
 ## Build process
-
-OBJ := $(addprefix $(OBJDIR)/,$(notdir $(SRC:.c=.o)))
-OBJ += $(addprefix $(OBJDIR)/,$(notdir $(ASM:.s=.o)))
+OBJ := $(addprefix $(OBJDIR)/, $(notdir $(SRC:.c=.o)))
+OBJ += $(addprefix $(OBJDIR)/, $(notdir $(ASM:.s=.o)))
+CPPOBJ := $(addprefix $(OBJDIR)/, $(notdir $(CPPSRC:.cpp=.o)))
 
 
 all:: $(BINDIR)/$(PROJECT).bin $(BINDIR)/$(PROJECT).hex
@@ -74,21 +75,32 @@ clean:
 size:
 	$(SIZE) $(BINDIR)/$(PROJECT).elf
 
-# Compilation
+makedebug:
+	@echo $(OBJ)
+	@echo $(CPPOBJ)
 
+#convert to hex
 $(BINDIR)/$(PROJECT).hex: $(BINDIR)/$(PROJECT).elf
 	$(OBJCOPY) -O ihex $(BINDIR)/$(PROJECT).elf $(BINDIR)/$(PROJECT).hex
 
+#convert to bin
 $(BINDIR)/$(PROJECT).bin: $(BINDIR)/$(PROJECT).elf
 	$(OBJCOPY) -O binary $(BINDIR)/$(PROJECT).elf $(BINDIR)/$(PROJECT).bin
 
-$(BINDIR)/$(PROJECT).elf: $(OBJ) $(LSCRIPT)
+# linking
+$(BINDIR)/$(PROJECT).elf: $(OBJ) $(CPPOBJ) $(LSCRIPT)
 	@mkdir -p $(dir $@)
-	$(CP) $(OBJ) $(LDFLAGS) -o $(BINDIR)/$(PROJECT).elf
+	$(CP) $(OBJ) $(CPPOBJ) $(LDFLAGS) -o $(BINDIR)/$(PROJECT).elf
 	$(OBJDUMP) -D $(BINDIR)/$(PROJECT).elf > $(BINDIR)/$(PROJECT).lst
 	$(SIZE) $(BINDIR)/$(PROJECT).elf
 
+# Compilation
 $(OBJDIR)/%.o: $(SRCDIR)/%.c
+	@mkdir -p $(dir $@)
+	$(CP) $(GCFLAGS) -c $< -o $@
+	@echo -e ""
+
+$(OBJDIR)/%.o: $(SRCDIR)/%.cpp
 	@mkdir -p $(dir $@)
 	$(CP) $(GCFLAGS) -c $< -o $@
 	@echo -e ""
@@ -101,6 +113,12 @@ $(OBJDIR)/%.o: $(SRCDIR)/%.s
 $(OBJDIR)/%.o: $(COMDIR)/src/%.c
 	@mkdir -p $(dir $@)
 	$(CP) $(GCFLAGS) -c $< -o $@
+	@echo -e ""
+
+$(OBJDIR)/%.o: $(COMDIR)/src/%.cpp
+	@mkdir -p $(dir $@)
+	$(CP) $(GCFLAGS) -c $< -o $@
+	@echo -e ""
 
 $(OBJDIR)/%.o: $(COMDIR)/src/%.s
 	@mkdir -p $(dir $@)
