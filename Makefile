@@ -41,6 +41,9 @@ GCFLAGS += $(CCOMMONFLAGS) $(INCLUDE) $(DEFINE) $(CDEPFLAGS)
 LDFLAGS += -T$(LSCRIPT) -mthumb -mcpu=$(CPU) --specs=nosys.specs --specs=nano.specs -Wl,-Map,$(BINDIR)/$(PROJECT).map -Wl,--gc-sections
 ASFLAGS += -mcpu=$(CPU)
 
+# CPP Flags
+CPPFLAGS = -fno-exceptions -fno-rtti
+
 # Tools
 CC = arm-none-eabi-gcc
 CP = arm-none-eabi-g++
@@ -97,12 +100,12 @@ $(BINDIR)/$(PROJECT).elf: $(OBJ) $(CPPOBJ) $(LSCRIPT)
 # Compilation
 $(OBJDIR)/%.o: $(SRCDIR)/%.c
 	@mkdir -p $(dir $@)
-	$(CP) $(GCFLAGS) -c $< -o $@
+	$(CP) $(GCFLAGS) $(CPPFLAGS) -c $< -o $@
 	@echo -e ""
 
 $(OBJDIR)/%.o: $(SRCDIR)/%.cpp
 	@mkdir -p $(dir $@)
-	$(CP) $(GCFLAGS) -c $< -o $@
+	$(CP) $(GCFLAGS) $(CPPFLAGS) -c $< -o $@
 	@echo -e ""
 
 $(OBJDIR)/%.o: $(SRCDIR)/%.s
@@ -112,12 +115,12 @@ $(OBJDIR)/%.o: $(SRCDIR)/%.s
 
 $(OBJDIR)/%.o: $(COMDIR)/src/%.c
 	@mkdir -p $(dir $@)
-	$(CP) $(GCFLAGS) -c $< -o $@
+	$(CP) $(GCFLAGS) $(CPPFLAGS) -c $< -o $@
 	@echo -e ""
 
 $(OBJDIR)/%.o: $(COMDIR)/src/%.cpp
 	@mkdir -p $(dir $@)
-	$(CP) $(GCFLAGS) -c $< -o $@
+	$(CP) $(GCFLAGS) $(CPPFLAGS) -c $< -o $@
 	@echo -e ""
 
 $(OBJDIR)/%.o: $(COMDIR)/src/%.s

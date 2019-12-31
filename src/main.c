@@ -7,22 +7,17 @@
 #include "stm32l0xx.h"
 #include "system_stm32l0xx.h"
 
+#include "systick.hpp"
+
 #define EEMEM __attribute__((section(".eeprom")))
 EEMEM uint8_t eepromArray[4095];
-
-// delay loop for the default 2.1 MHz CPU clock with optimizer enabled
-void delay(uint32_t msec)
-{
-    for (uint32_t j = 0; j < 419UL * msec; j++)
-    {
-        __NOP();
-    }
-}
 
 int main(void)
 {
     RCC->APB2ENR |= RCC_APB2ENR_SYSCFGEN;
     RCC->APB1ENR |= RCC_APB1ENR_PWREN;
+
+    Systick::init(SystemCoreClock, 1000); // 1000 ticks per second
 
     //Step 1: Enable the clock to PORT C
     RCC->IOPENR |= RCC_IOPENR_GPIOCEN;
@@ -35,11 +30,11 @@ int main(void)
     {
         //Step 3: Set PC13 high
         GPIOC->BSRR |= GPIO_BSRR_BS_13;
-        delay(250);
+        Systick::delay_ms(250);
 
         //Step 4: Reset PC13 low
         GPIOC->BSRR |= GPIO_BSRR_BR_13;
-        delay(250);
+        Systick::delay_ms(250);
     }
 
     return 0;
