@@ -1,5 +1,5 @@
 /**
- * STM32F030 skeleton
+ * STM32L071 skeleton
  *
  * John Berg @ netbasenext.nl
  */

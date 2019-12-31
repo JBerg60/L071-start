@@ -1,4 +1,4 @@
-# Makefile for the STM32F030 skeletion
+# Makefile for the STM32L071 skeletion
 #
 # John Berg @ netbasenext.nl
 #
@@ -42,6 +42,7 @@ ASFLAGS += -mcpu=$(CPU)
 
 # Tools
 CC = arm-none-eabi-gcc
+CP = arm-none-eabi-g++
 AS = arm-none-eabi-as
 AR = arm-none-eabi-ar
 LD = arm-none-eabi-ld
