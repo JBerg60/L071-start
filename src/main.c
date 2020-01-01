@@ -30,11 +30,11 @@ int main(void)
     {
         //Step 3: Set PC13 high
         GPIOC->BSRR |= GPIO_BSRR_BS_13;
-        Systick::delay_ms(250);
+        Systick::delay(250);
 
         //Step 4: Reset PC13 low
         GPIOC->BSRR |= GPIO_BSRR_BR_13;
-        Systick::delay_ms(250);
+        Systick::delay(250);
     }
 
     return 0;

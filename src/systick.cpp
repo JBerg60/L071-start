@@ -4,25 +4,39 @@
 // The current clock frequency
 uint32_t SystemCoreClock = 2097000;
 
-// Counts milliseconds
-volatile uint32_t systick_count = 0;
+// private static class member
+unsigned volatile Systick::count = 0;
+volatile Systick::CTRL_REGISTER &Systick::ctrl = *reinterpret_cast<CTRL_REGISTER *>(CTRL);
 
-void Systick::init(uint32_t systemCoreClock, uint32_t ticks)
+void Systick::init(unsigned systemCoreClock, unsigned ticks)
 {
-    SysTick->LOAD = systemCoreClock / ticks - 1;
-    SysTick->VAL = 0;
+    regwrite<LOAD>(systemCoreClock / ticks - 1);
+    regwrite<VAL>(0);
+    //ctrl.bit.CLKSOURCE = 1;
+    //ctrl.bit.TICKINT = 1;
     SysTick->CTRL |= SysTick_CTRL_CLKSOURCE_Msk | SysTick_CTRL_TICKINT_Msk | SysTick_CTRL_ENABLE_Msk;
+    enable();
+}
+
+void Systick::enable()
+{
+    //ctrl.bit.ENABLE = 1;
+}
+
+void Systick::disable()
+{
+    //ctrl.bit.ENABLE = 0;
 }
 
 void Systick::tick()
 {
-    systick_count++;
+    count++;
 }
 
-void Systick::delay_ms(uint32_t ms)
+void Systick::delay(unsigned ticks)
 {
-    uint32_t start = systick_count;
-    while (systick_count - start < ms)
+    unsigned start = count;
+    while (count - start < ticks)
         ;
 }
 
