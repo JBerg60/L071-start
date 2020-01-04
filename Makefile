@@ -51,7 +51,7 @@ AS = arm-none-eabi-as
 AR = arm-none-eabi-ar
 LD = arm-none-eabi-ld
 OBJCOPY = arm-none-eabi-objcopy
-SIZE = arm-none-eabi-size --format=SysV -x
+SIZE = arm-none-eabi-size
 OBJDUMP = arm-none-eabi-objdump
 
 RM = rm -rf
@@ -76,7 +76,8 @@ clean:
 	$(RM) $(OBJDIR)
 
 size:
-	$(SIZE) $(BINDIR)/$(PROJECT).elf
+	@$(SIZE) --format=SysV -x $(BINDIR)/$(PROJECT).elf
+	@$(SIZE) $(BINDIR)/$(PROJECT).elf
 
 makedebug:
 	@echo $(OBJ)
@@ -85,6 +86,9 @@ makedebug:
 #convert to hex
 $(BINDIR)/$(PROJECT).hex: $(BINDIR)/$(PROJECT).elf
 	$(OBJCOPY) -O ihex $(BINDIR)/$(PROJECT).elf $(BINDIR)/$(PROJECT).hex
+	@echo -e ""
+	@$(SIZE) --format=SysV -x $(BINDIR)/$(PROJECT).elf
+	@$(SIZE) $(BINDIR)/$(PROJECT).elf
 
 #convert to bin
 $(BINDIR)/$(PROJECT).bin: $(BINDIR)/$(PROJECT).elf
@@ -95,7 +99,6 @@ $(BINDIR)/$(PROJECT).elf: $(OBJ) $(CPPOBJ) $(LSCRIPT)
 	@mkdir -p $(dir $@)
 	$(CP) $(OBJ) $(CPPOBJ) $(LDFLAGS) -o $(BINDIR)/$(PROJECT).elf
 	$(OBJDUMP) -D $(BINDIR)/$(PROJECT).elf > $(BINDIR)/$(PROJECT).lst
-	$(SIZE) $(BINDIR)/$(PROJECT).elf
 
 # Compilation
 $(OBJDIR)/%.o: $(SRCDIR)/%.c
