@@ -11,20 +11,18 @@
  */
 Systick systick;
 uint32_t SystemCoreClock = 2097000;
+extern void gpio_init();
 
 // Blocking send
-int USART1_send(const char *ptr, int len)
+void USART1_send(const char *ptr)
 {
-    for (int i = 0; i < len; i++)
+    while (*ptr != 0)
     {
         while (!(USART1->ISR & USART_ISR_TXE))
             ;
         USART1->TDR = *ptr++;
     }
-    return len;
 }
-
-const char *msg = "Hello!\r\n";
 
 int main(void)
 {
@@ -33,12 +31,7 @@ int main(void)
 
     systick.start(SystemCoreClock / 1000); // 1000 ticks per second
 
-    //Enable the clock to PORT C
-    RCC->IOPENR |= RCC_IOPENR_GPIOCEN;
-
-    //Step 2: Configure PC13 as output, push pull
-    GPIOC->MODER &= ~GPIO_MODER_MODE13_Msk; // clear bits 26 and 27 to zero
-    GPIOC->MODER |= GPIO_MODER_MODE13_0;
+    gpio_init();
 
     //Enable the clock to PORT A
     RCC->IOPENR |= RCC_IOPENR_GPIOAEN;
@@ -77,7 +70,7 @@ int main(void)
         GPIOC->BSRR |= GPIO_BSRR_BR_13;
         systick.delay(500);
 
-        USART1_send(msg, 8);
+        USART1_send("Hello!\r\n");
     }
 
     return 0;
