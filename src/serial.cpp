@@ -1,5 +1,4 @@
 #include "serial.hpp"
-#include "board.hpp"
 
 void uart_init()
 {

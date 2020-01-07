@@ -1,8 +1,11 @@
+#pragma once
+
+#include "board.hpp"
 
 class Serial
 {
 public:
-    Serial(int rx, int tx)
+    Serial(PIN rx, PIN tx)
     {
     }
 

@@ -6,6 +6,7 @@
 
 #include "board.hpp"
 #include "serial.hpp"
+#include "rcc.hpp"
 
 /**
  * global objects and variable initialization
@@ -13,11 +14,10 @@
 Systick systick;
 uint32_t SystemCoreClock = 2097000;
 
-Serial bt(PA9, PA10);
+Serial bt(PIN::PA9, PIN::PA10);
 
 extern void gpio_init();
 extern void uart_init();
-extern void USART1_send(const char *ptr);
 
 int main(void)
 {
