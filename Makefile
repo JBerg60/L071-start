@@ -30,7 +30,7 @@ INCLUDE  = -I$(INCDIR) -I$(COMDIR)/include -I$(COMDIR)/cmsis
 LSCRIPT = STM32L071.ld
 
 # C/C++ Flags
-CCOMMONFLAGS = -Wall -Os -g -fno-common -mthumb -mcpu=$(CPU) --specs=nosys.specs --specs=nano.specs
+CCOMMONFLAGS = -Os -g -mcpu=$(CPU) -mthumb  -Wall  -fno-common  --specs=nosys.specs --specs=nano.specs
 
 # Generate dependency information
 CDEPFLAGS += -MMD -MP -MF $(@:%.o=%.d)
@@ -110,6 +110,7 @@ $(OBJDIR)/%.o: $(SRCDIR)/%.c
 $(OBJDIR)/%.o: $(SRCDIR)/%.cpp
 	@mkdir -p $(dir $@)
 	$(CP) $(GCFLAGS) $(CPPFLAGS) -c $< -o $@
+	$(OBJDUMP) -drwCS -marm $@ > $(OBJDIR)/$(notdir $<).S
 	@echo -e ""
 
 $(OBJDIR)/%.o: $(SRCDIR)/%.s
