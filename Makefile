@@ -36,7 +36,7 @@ CCOMMONFLAGS = -Wall -Os -g -fno-common -mthumb -mcpu=$(CPU) --specs=nosys.specs
 CDEPFLAGS += -MMD -MP -MF $(@:%.o=%.d)
 
 # C Flags
-GCFLAGS  = -std=c++14 -Wa,-ahlms=$(addprefix $(OBJDIR)/,$(notdir $(<:.c=.lst)))
+GCFLAGS  = -std=c++14 -fverbose-asm
 GCFLAGS += $(CCOMMONFLAGS) $(INCLUDE) $(DEFINE) $(CDEPFLAGS)
 LDFLAGS += -T$(LSCRIPT) -mthumb -mcpu=$(CPU) --specs=nosys.specs --specs=nano.specs -Wl,-Map,$(BINDIR)/$(PROJECT).map -Wl,--gc-sections
 ASFLAGS += -mcpu=$(CPU)
@@ -98,12 +98,13 @@ $(BINDIR)/$(PROJECT).bin: $(BINDIR)/$(PROJECT).elf
 $(BINDIR)/$(PROJECT).elf: $(OBJ) $(CPPOBJ) $(LSCRIPT)
 	@mkdir -p $(dir $@)
 	$(CP) $(OBJ) $(CPPOBJ) $(LDFLAGS) -o $(BINDIR)/$(PROJECT).elf
-	$(OBJDUMP) -D $(BINDIR)/$(PROJECT).elf > $(BINDIR)/$(PROJECT).lst
+	$(OBJDUMP) -drwCS -marm $(BINDIR)/$(PROJECT).elf > $(BINDIR)/$(PROJECT).S
 
 # Compilation
 $(OBJDIR)/%.o: $(SRCDIR)/%.c
 	@mkdir -p $(dir $@)
 	$(CP) $(GCFLAGS) $(CPPFLAGS) -c $< -o $@
+	$(OBJDUMP) -drwCS -marm $@ > $(OBJDIR)/$(notdir $<).S
 	@echo -e ""
 
 $(OBJDIR)/%.o: $(SRCDIR)/%.cpp
