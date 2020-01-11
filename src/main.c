@@ -5,6 +5,7 @@
  */
 
 #include "stm32l0xx.h"
+#include <stdio.h>
 #include "util.hpp"
 #include "gpio.hpp"
 #include "systick.hpp"
@@ -58,6 +59,8 @@ int main(void)
     Systick t;
     t.start(SystemCoreClock / 1000); // 1000 ticks per second
 
+    // use bluetooth interface as a debugging console
+    // BTTerminal on Android on the connecting side;
     Serial<PA9, PA10> bt;
 
     // Use system clock for USART1
@@ -80,6 +83,10 @@ int main(void)
         os.delay(150);
     }
 
+    bt.send("Boot complete\r\n");
+    char buffer[32];
+    unsigned i = 0;
+
     while (1)
     {
         led.on();
@@ -88,7 +95,8 @@ int main(void)
         led.off();
         os.delay(1000);
 
-        bt.send("Hello!\r\n");
+        sprintf(buffer, "loop [%d]\r\n", ticker);
+        bt.send(buffer);
     }
 }
 
