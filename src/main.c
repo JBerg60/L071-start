@@ -7,6 +7,7 @@
 #include "stm32l0xx.h"
 #include <stdio.h>
 #include "util.hpp"
+#include "os.hpp"
 #include "gpio.hpp"
 #include "systick.hpp"
 #include "serial.hpp"
@@ -14,6 +15,11 @@
 // The current clock frequency
 uint32_t SystemCoreClock = 2097000;
 volatile uint32_t ticker = 0;
+
+struct PA0 : public Pindef<0, 0>
+{
+    static constexpr uint32_t base{GPIOA_BASE};
+};
 
 struct PA9 : public Pindef<9, 0>
 {
@@ -38,12 +44,19 @@ struct PA10 : public Pindef<10, 0>
     };
 };
 
+struct PB15 : public Pindef<15, 1>
+{
+    static constexpr uint32_t base{GPIOB_BASE};
+};
+
 struct PC13 : public Pindef<13, 2>
 {
     static constexpr uint32_t base{GPIOC_BASE};
 };
 
-void SystemInit();
+extern void SystemInit();
+
+char buffer[64];
 
 int main(void)
 {
@@ -55,6 +68,9 @@ int main(void)
     Os os;
 
     Gpio<PC13> led(PinMode::output);
+
+    Gpio<PB15> refon(PinMode::output);
+    Gpio<PA0> vref;
 
     Systick t;
     t.start(SystemCoreClock / 1000); // 1000 ticks per second
@@ -83,9 +99,9 @@ int main(void)
         os.delay(150);
     }
 
+    refon = true;
+
     bt.send("Boot complete\r\n");
-    char buffer[32];
-    unsigned i = 0;
 
     while (1)
     {
@@ -95,56 +111,7 @@ int main(void)
         led.off();
         os.delay(1000);
 
-        sprintf(buffer, "loop [%d]\r\n", ticker);
-        bt.send(buffer);
+        //sprintf(buffer, "loop [%ld] vref [%ld]\r\n", ticker, vref.value());
+        //bt.send(buffer);
     }
-}
-
-// Change system clock to 32 MHz using 8 MHz crystal
-void SystemInit()
-{
-    // Because the debugger switches PLL on, we may
-    // need to switch back to the HSI oscillator without PLL
-
-    // Switch to HSI oscillator
-    MODIFY_REG(RCC->CFGR, RCC_CFGR_SW, RCC_CFGR_SW_HSI);
-
-    // Wait until the switch is done
-    //while ((RCC->CFGR & RCC_CFGR_SWS_Msk) != RCC_CFGR_SWS_HSI)
-    //{
-    //}
-
-    // Disable the PLL, then we can configure it
-    CLEAR_BIT(RCC->CR, RCC_CR_PLLON);
-
-    // Flash latency 1 wait state
-    SET_BIT(FLASH->ACR, FLASH_ACR_LATENCY);
-
-    // Enable HSE oscillator
-    SET_BIT(RCC->CR, RCC_CR_HSEON);
-
-    // Wait until HSE oscillator is ready
-    while (!READ_BIT(RCC->CR, RCC_CR_HSERDY))
-    {
-    }
-
-    // 32 MHz using the 8 MHz HSE oscillator multiply by 8 divide by 2
-    WRITE_REG(RCC->CFGR, RCC_CFGR_PLLSRC_HSE + RCC_CFGR_PLLMUL8 + RCC_CFGR_PLLDIV2);
-
-    // Enable PLL
-    SET_BIT(RCC->CR, RCC_CR_PLLON);
-
-    // Wait until PLL is ready
-    while (!READ_BIT(RCC->CR, RCC_CR_PLLRDY))
-    {
-    }
-
-    // Select PLL as clock source
-    MODIFY_REG(RCC->CFGR, RCC_CFGR_SW, RCC_CFGR_SW_PLL);
-
-    // Update variable
-    SystemCoreClock = 32000000;
-
-    // Switch the MSI oscillator off
-    CLEAR_BIT(RCC->CR, RCC_CR_MSION);
 }

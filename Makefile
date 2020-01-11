@@ -87,8 +87,7 @@ makedebug:
 $(BINDIR)/$(PROJECT).hex: $(BINDIR)/$(PROJECT).elf
 	$(OBJCOPY) -O ihex $(BINDIR)/$(PROJECT).elf $(BINDIR)/$(PROJECT).hex
 	@echo -e ""
-	@$(SIZE) --format=SysV -x $(BINDIR)/$(PROJECT).elf
-	@$(SIZE) $(BINDIR)/$(PROJECT).elf
+	@$(SIZE) -A -x $(BINDIR)/$(PROJECT).elf
 
 #convert to bin
 $(BINDIR)/$(PROJECT).bin: $(BINDIR)/$(PROJECT).elf

@@ -29,7 +29,7 @@ struct Pindef : public Pin
     static constexpr unsigned mask{1 << pin};
 
     static constexpr unsigned pin2bit{pin * 2};
-    static constexpr unsigned mask2bit{0b11 << pin2bit};
+    static constexpr unsigned mask2bit{static_cast<unsigned>(0b11 << pin2bit)};
 
     static constexpr unsigned pin4bit{(pin % 8) * 4};
     static constexpr unsigned mask4bit{0b1111 << pin4bit};
@@ -77,5 +77,8 @@ struct Gpio
     void on() { gpio.BSRR = P::mask; }
     void off() { gpio.BSRR = P::mask << 16; }
     void toggle() { gpio.ODR ^= P::mask; }
-    bool value() { return gpio.IDR & P::mask; }
+    uint32_t value() { return gpio.IDR & P::mask; }
+
+    void operator=(bool value) { value ? on() : off(); }
+    operator uint32_t() { return value(); }
 };
