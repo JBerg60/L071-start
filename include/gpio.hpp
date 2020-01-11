@@ -16,8 +16,12 @@ enum class Ports
 
 };
 
-template <unsigned pinnr, unsigned portnr>
 struct Pin
+{
+};
+
+template <unsigned pinnr, unsigned portnr>
+struct Pindef : public Pin
 {
     static_assert(pinnr <= 15, "Pin number must be 0 .. 15!");
 
@@ -27,30 +31,51 @@ struct Pin
     static constexpr unsigned pin2bit{pin * 2};
     static constexpr unsigned mask2bit{0b11 << pin2bit};
 
+    static constexpr unsigned pin4bit{(pin % 8) * 4};
+    static constexpr unsigned mask4bit{0b1111 << pin4bit};
+
+    static constexpr unsigned afreg{(pin / 8) & 1};
+
     static constexpr unsigned port{portnr};
     static constexpr unsigned portmask{1 << port};
 };
 
-template <typename Pin>
+template <typename P>
 struct Gpio
 {
+    static_assert(std::is_base_of<Pin, P>::value, "P must derive from Pin");
+
     Gpio(PinMode pinMode = PinMode::input)
     {
         Rcc rcc;
-        rcc.gpioClockEnable(Pin::portmask);
+        rcc.gpioClockEnable(P::portmask);
 
         mode(pinMode);
     }
 
-    GPIO_TypeDef &gpio = *reinterpret_cast<GPIO_TypeDef *>(Pin::base);
+    Gpio(PinMode pinMode, unsigned altfunc)
+    {
+        Rcc rcc;
+        rcc.gpioClockEnable(P::portmask);
+
+        altpinfunc(altfunc);
+        mode(pinMode);
+    }
+
+    GPIO_TypeDef &gpio = *reinterpret_cast<GPIO_TypeDef *>(P::base);
 
     void mode(PinMode mode)
     {
-        gpio.MODER = (gpio.MODER & ~Pin::mask2bit) | as_integer(mode) << Pin::pin2bit;
+        gpio.MODER = (gpio.MODER & ~P::mask2bit) | as_integer(mode) << P::pin2bit;
     }
 
-    void on() { gpio.BSRR = Pin::mask; }
-    void off() { gpio.BSRR = Pin::mask << 16; }
-    void toggle() { gpio.ODR ^= Pin::mask; }
-    bool value() { return gpio.IDR & Pin::mask; }
+    void altpinfunc(unsigned altfunc)
+    {
+        gpio.AFR[P::afreg] = (gpio.AFR[P::afreg] & ~P::mask4bit) | altfunc << P::pin4bit;
+    }
+
+    void on() { gpio.BSRR = P::mask; }
+    void off() { gpio.BSRR = P::mask << 16; }
+    void toggle() { gpio.ODR ^= P::mask; }
+    bool value() { return gpio.IDR & P::mask; }
 };
