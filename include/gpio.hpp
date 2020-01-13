@@ -2,6 +2,7 @@
 
 #include "util.hpp"
 #include "rcc.hpp"
+#include "adc.hpp"
 
 enum class PinMode : unsigned
 {
@@ -50,7 +51,7 @@ struct Gpio
         Rcc rcc;
         rcc.gpioClockEnable(P::portmask);
 
-        mode(pinMode);
+        setmode(pinMode);
     }
 
     Gpio(PinMode pinMode, unsigned altfunc)
@@ -59,12 +60,17 @@ struct Gpio
         rcc.gpioClockEnable(P::portmask);
 
         altpinfunc(altfunc);
-        mode(pinMode);
+        setmode(pinMode);
     }
 
     GPIO_TypeDef &gpio = *reinterpret_cast<GPIO_TypeDef *>(P::base);
 
-    void mode(PinMode mode)
+    PinMode getmode()
+    {
+        return static_cast<PinMode>((gpio.MODER & P::mask2bit) >> P::pin2bit);
+    }
+
+    void setmode(PinMode mode)
     {
         gpio.MODER = (gpio.MODER & ~P::mask2bit) | as_integer(mode) << P::pin2bit;
     }
@@ -77,7 +83,8 @@ struct Gpio
     void on() { gpio.BSRR = P::mask; }
     void off() { gpio.BSRR = P::mask << 16; }
     void toggle() { gpio.ODR ^= P::mask; }
-    uint32_t value() { return gpio.IDR & P::mask; }
+
+    uint32_t value() { return getmode() == PinMode::analog ? Adc::read(P::pin) : gpio.IDR & P::mask; }
 
     void operator=(bool value) { value ? on() : off(); }
     operator uint32_t() { return value(); }

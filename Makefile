@@ -76,8 +76,8 @@ clean:
 	$(RM) $(OBJDIR)
 
 size:
-	@$(SIZE) --format=SysV -x $(BINDIR)/$(PROJECT).elf
-	@$(SIZE) $(BINDIR)/$(PROJECT).elf
+	@$(SIZE) -A -x $(BINDIR)/$(PROJECT).elf
+	@$(SIZE) -A $(BINDIR)/$(PROJECT).elf
 
 makedebug:
 	@echo $(OBJ)

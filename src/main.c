@@ -11,10 +11,15 @@
 #include "gpio.hpp"
 #include "systick.hpp"
 #include "serial.hpp"
+#include "adc.hpp"
 
 // The current clock frequency
 uint32_t SystemCoreClock = 2097000;
 volatile uint32_t ticker = 0;
+
+extern void SystemInit();
+
+char buffer[64];
 
 struct PA0 : public Pindef<0, 0>
 {
@@ -54,10 +59,6 @@ struct PC13 : public Pindef<13, 2>
     static constexpr uint32_t base{GPIOC_BASE};
 };
 
-extern void SystemInit();
-
-char buffer[64];
-
 int main(void)
 {
     RCC->APB2ENR |= RCC_APB2ENR_SYSCFGEN;
@@ -65,15 +66,16 @@ int main(void)
 
     SystemInit();
 
+    Systick t;
+    t.start(SystemCoreClock / 1000); // 1000 ticks per second
+
     Os os;
+    Adc::init();
 
     Gpio<PC13> led(PinMode::output);
 
     Gpio<PB15> refon(PinMode::output);
-    Gpio<PA0> vref;
-
-    Systick t;
-    t.start(SystemCoreClock / 1000); // 1000 ticks per second
+    Gpio<PA0> vref(PinMode::analog);
 
     // use bluetooth interface as a debugging console
     // BTTerminal on Android on the connecting side;
@@ -111,7 +113,7 @@ int main(void)
         led.off();
         os.delay(1000);
 
-        //sprintf(buffer, "loop [%ld] vref [%ld]\r\n", ticker, vref.value());
-        //bt.send(buffer);
+        sprintf(buffer, "loop [%ld] vref [%ld]\r\n", ticker, vref.value());
+        bt.send(buffer);
     }
 }
