@@ -101,8 +101,6 @@ int main(void)
         os.delay(150);
     }
 
-    refon = true;
-
     bt.send("Boot complete\r\n");
 
     while (1)
@@ -113,6 +111,7 @@ int main(void)
         led.off();
         os.delay(1000);
 
+        refon = !refon;
         sprintf(buffer, "loop [%ld] vref [%ld]\r\n", ticker, vref.value());
         bt.send(buffer);
     }
